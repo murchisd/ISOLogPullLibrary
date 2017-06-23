@@ -14,7 +14,7 @@ using Galactic.Configuration;
 namespace ISOLogPullLibrary
 {
     // This class handles retrieving the default config values from AppOptions.config file
-    // Code was largely taken from Will Sykes' LogAI application 
+     
     public class AppOptions
     {
 
