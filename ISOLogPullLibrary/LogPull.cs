@@ -177,8 +177,22 @@ namespace ISOLogPullLibrary
                 var subscriptionList = ListSubscription();
                 if (subscriptionList == null || subscriptionList.Count == 0)
                 {
-                    Console.WriteLine("No Subscriptions found. Use <start> argument to start a subscription");
-                    return;
+                    using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
+                    {
+                        writer.WriteLine("No Subscriptions found.");
+                        int tmp = StartSubscription();
+                        if (tmp == 0)
+                        {
+                            writer.WriteLine("Failed to start subscription for {0}", SubscriptionType);
+                            writer.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
+                        }
+                        else
+                        {
+                            writer.WriteLine("Started Subscription");
+                        }
+                        return;
+                    }
+                       
                 }
                 else
                 {
@@ -190,15 +204,17 @@ namespace ISOLogPullLibrary
                     {
                         if (subscription.Value<string>("contentType") == type)
                         {
-                            Console.WriteLine(subscription);
-                            found = true;
+                            if (subscription.Value<string>("status") == "enabled")
+                            {
+                                Console.WriteLine(subscription);
+                                found = true;
+                            }  
                         }
                     }
 
                     if (found == true)
                     {
                         // If found, make default request or use start and end time if specified
-
                         if (StartTime != null && EndTime != null)
                         {
                             request = String.Format(CultureInfo.InvariantCulture, "https://manage.office.com/api/v1.0/{0}/activity/feed/subscriptions/content?contentType=Audit.{1}&startTime={2}&endTime={3}", appOptions.TenantId, SubscriptionType, StartTime, EndTime);
@@ -218,19 +234,48 @@ namespace ISOLogPullLibrary
                         ManualResetEvent[] doneEvents = new ManualResetEvent[64];
                         int i = 0;
                         int retry = 0;
+                        int throttle;
                         do
                         {
                             //spin.Turn();
 
                             // Get initial page request or nextpage request
-                            // Pass the request and authentication result to HttpGet method to make actual Get request 
-                            response = HttpGet(request, authResult);
-                            
+                            // Pass the request and authentication result to HttpGet method to make actual Get request
+                            throttle = 0;
+                            do
+                            {
+                                response = HttpGet(request, authResult);
+                                //response.Headers.TryGetValues("Status", out values);
+                                try
+                                {
+                                    content = response.Content.ReadAsStringAsync().Result;
+                                    JObject tmpObj = JObject.Parse(content);
+                                    Console.WriteLine(tmpObj["error"]["code"]);
+                                    if (tmpObj["error"]["code"].ToString() == "AF429")
+                                    {
+                                        Thread.Sleep(5000+(1000*throttle));
+                                        throttle++;
+                                    }
+                                    else
+                                    {
+                                        throttle = 20;
+                                    }
+
+                                }catch
+                                {
+                                    throttle = 20;
+                                }
+                            }while(throttle < 20);
+                                
+
+
+
+
                             // if the response is not null;
                             // often microsoft returns null response for next page requests
                             // library will retry the request up to 50 times sleeping for 2 seconds
                             // each time
-
+                            
                             if (response != null)
                             {
                                 // If next page header is specified in response then store in
@@ -317,9 +362,27 @@ namespace ISOLogPullLibrary
                         }
 
                         // Use wait handle all to wait for the last threads to finish
-                        Console.WriteLine("Waiting...");                        
-                        WaitHandle.WaitAll(doneEvents);                        
-                        Console.WriteLine("All threads are complete.");
+                        int j = i;
+                        do
+                        {
+                            try
+                            {
+                                Console.WriteLine("Waiting...");
+                                WaitHandle.WaitAll(doneEvents);
+                                Console.WriteLine("All threads are complete.");
+                                j = 0;
+
+                            }
+                            catch
+                            {
+                                j--;
+                                if (i < 64)
+                                {
+                                    Array.Resize<ManualResetEvent>(ref doneEvents, (i));
+                                }
+                            }
+                        } while (j!=0);
+                        
                         SafeWriter.Stitch(i);
                     }
 
@@ -327,9 +390,21 @@ namespace ISOLogPullLibrary
                     // reach this branch if subscriptions found but not the subtype specified
                     else
                     {
-                        Console.WriteLine("Subscription {0} was not found", SubscriptionType);
-                        Console.WriteLine("Use <start> argument to start subscription");
-                        return;
+                        using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
+                        {
+                            writer.WriteLine("Subscription {0} was not found", SubscriptionType);
+                            int tmp = StartSubscription();
+                            if (tmp == 0)
+                            {
+                                writer.WriteLine("Failed to start subscription for {0}", SubscriptionType);
+                                writer.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
+                            }else
+                            {
+                                writer.WriteLine("Started Subscription");
+                            }
+                            return;
+                        }
+                            
                     }
                 }
 
@@ -347,7 +422,7 @@ namespace ISOLogPullLibrary
 
 
         // Method used to start a subscription for the specified subtype 
-        public JArray StartSubscription()
+        public int StartSubscription()
         {
             // Instaniate a new AppOptions class.
             // This ensures that we grab the most recent config file data.
@@ -377,13 +452,14 @@ namespace ISOLogPullLibrary
                 
                 // pass request and authentication to HttpPost method to send actual Post request
                 HttpResponseMessage response = HttpPost(request, authResult);
-                string content = response.Content.ReadAsStringAsync().Result;
-                var array = JArray.Parse(content); 
-                return array;
+                //string content = response.Content.ReadAsStringAsync().Result;
+                //var array = JArray.Parse(content); 
+                return 1;
             }
             catch
             {
-                return null;
+                
+                return 0;
             }
 
             
@@ -392,7 +468,7 @@ namespace ISOLogPullLibrary
         // Method used to start a subscription for the specified subtype
         // Same as start but with stop specified.
         // Could combine the two methods in version 2 and just pass extra argument to specify start or stop 
-        public JArray StopSubscription()
+        public int StopSubscription()
         {
             // Instaniate a new AppOptions class.
             // This ensures that we grab the most recent config file data.
@@ -417,13 +493,13 @@ namespace ISOLogPullLibrary
                 string request = String.Format(CultureInfo.InvariantCulture, "https://manage.office.com/api/v1.0/{0}/activity/feed/subscriptions/stop?contentType=Audit.{1}", appOptions.TenantId, SubscriptionType);
                 AuthenticationResult authResult = Auth.Result;
                 HttpResponseMessage response = HttpPost(request, authResult);
-                string content = response.Content.ReadAsStringAsync().Result;
-                var array = JArray.Parse(content);
-                return array;
+                //string content = response.Content.ReadAsStringAsync().Result;
+                //var array = JArray.Parse(content);
+                return 1;
             }
             catch
             {
-                return null;
+                return 0;
             }
         }
 
@@ -709,75 +785,7 @@ namespace ISOLogPullLibrary
             //Method to actually write the logs to a file
             public void WriteToFile(JArray logs, string threadContext)
             {
-                /*string csvpath = Filepath + ".csv";
-                using (var OutFile = new LoggerConfiguration().WriteTo.Async(a => a.File(csvpath, outputTemplate: "{Message}{NewLine}")).CreateLogger())
-                {
-
-                    foreach (JObject log in logs.Children<JObject>())
-                    {
-                        string[] message = new string[log.Count];
-                        int i = 0;
-                        foreach (JProperty field in log.Properties())
-                        {
-
-                            message[i] = field.Value.ToString();
-                            i++;
-                        }
-                        var output = string.Join("\t", message);
-                        OutFile.Information(output);
-                        //OutFile.C
-                    }
-                }
-                */
-                // check thread lock
-                /* lock (locker)
-                 {
-                     // append .csv to file path
-                     try
-                     {
-                         string path = Filepath + ".csv";
-
-                         //create StreamWriter and pass to CsvWriter to convert JArray to csv
-                         using (StreamWriter writer2 = new StreamWriter(path, true))
-                         using (CsvWriter csv = new CsvWriter(writer2))
-                         {
-                             //using tab delimited since some UserAgent strings contain commas
-                             csv.Configuration.Delimiter = "\t";
-
-                             // To convert to csv had to pull each JObject out individually
-                             // and then oull each property out of JObject and write as field in csv
-                             // then call NextRecord to let csvWriter know to move to next line
-                             foreach (JObject log in logs.Children<JObject>())
-                             {
-                                 foreach (JProperty field in log.Properties())
-                                 {
-
-                                     csv.WriteField(field.Value.ToString());
-                                     //string.Join("\t", new string[] { })
-                                 }
-                                 csv.NextRecord();
-                             }
-
-                         }
-                     }
-                     catch
-                     {
-
-                         if (FileNum < 10)
-                         {
-                             FileNum++;
-                             this.SetFilePath(Filepath + FileNum.ToString());
-                             this.WriteToFile(logs);
-                         }
-                         else
-                         {
-                             Console.WriteLine("Error: Already created 10 files, rerun program");
-                         }
-
-
-                     }
-
-                 }*/
+               
                 string path = Filepath + threadContext + ".csv";
                 using (StreamWriter writer2 = new StreamWriter(path, true))
                 using (CsvWriter csv = new CsvWriter(writer2))
@@ -807,22 +815,29 @@ namespace ISOLogPullLibrary
                 int i;
                 for (i = 0; i < threads; i++)
                 {
-                    string path = Filepath + i.ToString() + ".csv";
-                    using (StreamWriter writer = new StreamWriter(Filepath + ".csv", true))
-                    using (StreamReader reader = new StreamReader(path))
+                    try
                     {
-                        if (File.Exists(path))
+                        string path = Filepath + i.ToString() + ".csv";
+                        using (StreamWriter writer = new StreamWriter(Filepath + ".csv", true))
+                        using (StreamReader reader = new StreamReader(path))
                         {
-                            while (reader.Peek() >= 0)
+                            if (File.Exists(path))
                             {
-                                writer.WriteLine(reader.ReadLine());
+                                while (reader.Peek() >= 0)
+                                {
+                                    writer.WriteLine(reader.ReadLine());
+                                }
                             }
                         }
-                    }
-                    if (File.Exists(path))
+                        if (File.Exists(path))
+                        {
+                            File.Delete(path);
+                        }
+                    }catch
                     {
-                        File.Delete(path);
+                        Console.WriteLine(i.ToString() + " Thread Output not Found");
                     }
+                    
                 }
             }
         }
