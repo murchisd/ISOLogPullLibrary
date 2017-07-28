@@ -70,24 +70,24 @@ Below I have listed instructions for using openssl to create a certificate and W
 
 Open a bash prompt and run the following commands
 
-'''
+```
 openssl genrsa -out <preferred_name>.key 2048
-'''
+```
 This will generate a key pair to be used in the certificate. 
 
-'''
+```
 openssl req -new -key <preferred_name>.key -out <preferred_name>.csr
-'''
+```
 Fill out the relevant information. Leave the password blank. Now we will be able to sign the certificate
 
-'''
+```
 openssl x509 -req -days 366 -in <preferred_name>.csr -signkey <preferred_name> -out <preferred_name>.crt
-'''
+```
 Now we just need to generate the .pfx file
 
-'''
+```
 openssl pkcs12 -export -nodes -out <preferred_name>.pfx -inkey <preferred_name>.key -in <preferred_name>.crt 
-'''
+```
 You should now have a .pfx file which can be installed in your computers cert store.
 
 To install the cert on the local machine:
@@ -111,15 +111,15 @@ The AppOptions.config file is a config file that stores information like Tenant 
 The easiest way to fill out this file is to run the executable which will create the file with default settings stored in file. (Bug - the executable may hang, just kill the process)
 This repository has a TestApplication executable which can be run to test the library. In a command prompt, navigate to "TestApplication\bin\Debug" or "TestApplication\bin\Release" (Depending on your settings when building the solution), then run "TestApplication.exe".
 
-Open the AppOptions.config file in a text editor and add the values for any blank fields. The file should appear similar to below
+Open the AppOptions.config file in a text editor and add the values for any blank fields. The file should appear similar to below:
 
-aadinstance=https://login.microsoftonline.com
-tenant=
-clientid=
-tenantid=
-certthumbprint=
-resourceid=https://manage.office.com
-subscriptiontype=exchange
+aadinstance=https://login.microsoftonline.com    
+tenant=   
+clientid=   
+tenantid=   
+certthumbprint=   
+resourceid=https://manage.office.com   
+subscriptiontype=exchange   
 tempfolder=C:\Users\<current_user>\AppData\Local\Temp\
 
 ### Run a console application calling the library
