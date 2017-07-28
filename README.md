@@ -1,4 +1,4 @@
-#Office 365 Log Pull Library
+# Office 365 Log Pull Library
 
 Office 365 Log Pull Library is a library written in C# to help applications interact with the Office 365 Management API to manage logs. The project was started as a way to re-establish logging user access for Exchange after a migration from an on-premises Exchange Server to Exchange Online.
 
@@ -18,12 +18,12 @@ This library helps applications
 
 When used with [ExchangeOnlineLogPull](https://github.com/murchisd/ExchangeOnlineLogPull) Console Application it provides a quick and easy way to retrieve activity logs from online services such as Exchange, SharePoint, and Azure Active Directory.
 
-##Prerequisites
+## Prerequisites
 
 * Office 365 tenant admin account
 * X.509 certificate
 
-##Installing the library
+## Installing the library
 
 Clone the repository with
 '''
@@ -32,7 +32,7 @@ git clone https://github.com/murchisd/ISOLogPullLibrary.git
 
 Open the "ISOLogPullLibrary.sln" in visual studios, right-click "Solution" in Solution Explorer, select "Build Solution".
 
-##Testing the library
+## Testing the library
 
 To use the library you will need to:
 
@@ -43,7 +43,7 @@ To use the library you will need to:
 * Add necessary information to the AppOptions.config file 
 * Run a console application calling the library
 
-###Registering the Application and Specifying permissions
+### Registering the Application and Specifying permissions
 
 These two steps require Microsoft tenant admin credentials, but are fairly straight forward. 
 Follow Microsoft's [Get Started with Office 365 Management APIs](https://msdn.microsoft.com/en-us/office-365/get-started-with-office-365-management-apis) guide
@@ -63,7 +63,7 @@ We specified the following permissions:
 	* Read all group
 * Office 365 SharePoint Online
 
-###Install certificate on local machine
+### Install certificate on local machine
 
 A self-signed certificate can be used to authenticate to the Microsoft APIs. The guide linked to above provides instrcution for creating and installing the certificate using Windows SDK makecert and Powershell.
 Below I have listed instructions for using openssl to create a certificate and Windows mmc to install it.
@@ -106,7 +106,7 @@ Jump to the "Configure an X.509 certificate to enable service-to-service calls" 
 ### Add necessary information to the AppOptions.config file
 
 The AppOptions.config file is a config file that stores information like Tenant ID, Client ID, and Certificate Thumbprint.
-####Important - this file is located in the directory of the executable which calls the library, not the directory of the library itself
+#### Important - this file is located in the directory of the executable which calls the library, not the directory of the library itself
 
 The easiest way to fill out this file is to run the executable which will create the file with default settings stored in file. (Bug - the executable may hang, just kill the process)
 This repository has a TestApplication executable which can be run to test the library. In a command prompt, navigate to "TestApplication\bin\Debug" or "TestApplication\bin\Release" (Depending on your settings when building the solution), then run "TestApplication.exe".
@@ -122,7 +122,7 @@ resourceid=https://manage.office.com
 subscriptiontype=Exchange
 tempfolder=C:\Users\<current_user>\AppData\Local\Temp\
 
-###Run a console application calling the library
+### Run a console application calling the library
 
 In a command prompt, navigate to "TestApplication\bin\Debug" or "TestApplication\bin\Release" (Depending on your settings when building the solution), then run "TestApplication.exe".
 
