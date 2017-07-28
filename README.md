@@ -119,7 +119,7 @@ clientid=
 tenantid=
 certthumbprint=
 resourceid=https://manage.office.com
-subscriptiontype=Exchange
+subscriptiontype=exchange
 tempfolder=C:\Users\<current_user>\AppData\Local\Temp\
 
 ### Run a console application calling the library
@@ -133,4 +133,4 @@ Check out [ExchangeOnlineLogPull](https://github.com/murchisd/ExchangeOnlineLogP
 ## Authors
 
 * **Donald Murchison** - *Initial work* - [murchisd](https://github.com/murchisd)
-* **Taylor Elledge** - *Intital work* - [taylorelledge](https://github.com/taylorelldge)
+* **Taylor Elledge** - *Intital work* - [taylorelledge](https://github.com/taylorelledge)
