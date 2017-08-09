@@ -245,7 +245,11 @@ namespace ISOLogPullLibrary
                         }
                     }
 
-                    try
+
+                    // These two settings have been removed for now
+                    // Tempfolder had not been implemented and subscriptiontype can be set at command line
+                    // AppOptions now only contains the configuration information
+                    /*try
                     {
                         SubscriptionType = appOptionsDictionary["subscriptiontype"];
                     }
@@ -276,7 +280,7 @@ namespace ISOLogPullLibrary
                             TempFolder = Path.GetTempPath();
                             wr.WriteLine("tempfolder=" + TempFolder);
                         }
-                    }
+                    }*/
                     // This is the only attribute which will not be found in the config file
                     // Application uses AADInstance and Tenant to create Authority
                     // Does not write to config file

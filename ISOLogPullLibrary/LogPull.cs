@@ -133,10 +133,14 @@ namespace ISOLogPullLibrary
             //Version 2 - allow use
             //ConsoleSpinner spin = new ConsoleSpinner();
 
+
+            //This if statement has been deprecated for now
+            // subtype in AppOptions has been removed until v2
+
             // If SubscriptionType was not set in command line 
             // try to use value in config file; Allows user to set own default subtype
             // If not set in config use default Exchange
-            if (SubscriptionType == null)
+            /*if (SubscriptionType == null)
             {
                 if (appOptions.SubscriptionType == "" || appOptions.SubscriptionType == null)
                 {
@@ -147,7 +151,7 @@ namespace ISOLogPullLibrary
                     SubscriptionType = appOptions.SubscriptionType;
                 }
 
-            }
+            }*/
             try
             {
                 HttpResponseMessage response;
@@ -155,7 +159,7 @@ namespace ISOLogPullLibrary
                 AuthenticationResult authResult = Auth.Result;
                 if (authResult == null)
                 {
-                    Console.WriteLine("Error with Certificate authentication, check if cert properly installed and permissions of user");
+                    Console.WriteLine("Error: Error with Certificate authentication, check if cert properly installed and permissions of user");
                     return;
                 }
                 string content;
@@ -177,21 +181,21 @@ namespace ISOLogPullLibrary
                 var subscriptionList = ListSubscription();
                 if (subscriptionList == null || subscriptionList.Count == 0)
                 {
-                    using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
-                    {
-                        writer.WriteLine("No Subscriptions found.");
+                    //using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
+                    //{
+                        Console.WriteLine("Error: No Subscriptions found.");
                         int tmp = StartSubscription();
                         if (tmp == 0)
                         {
-                            writer.WriteLine("Failed to start subscription for {0}", SubscriptionType);
-                            writer.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
+                            Console.WriteLine("Error: Failed to start subscription for {0}", SubscriptionType);
+                            Console.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
                         }
                         else
                         {
-                            writer.WriteLine("Started Subscription");
+                            Console.WriteLine("Successfully Started Subscription");
                         }
                         return;
-                    }
+                    //}
                        
                 }
                 else
@@ -218,7 +222,7 @@ namespace ISOLogPullLibrary
                         if (StartTime != null && EndTime != null)
                         {
                             request = String.Format(CultureInfo.InvariantCulture, "https://manage.office.com/api/v1.0/{0}/activity/feed/subscriptions/content?contentType=Audit.{1}&startTime={2}&endTime={3}", appOptions.TenantId, SubscriptionType, StartTime, EndTime);
-                            Console.WriteLine(request);
+                            //Console.WriteLine(request);
                         }
                         else
                         {
@@ -334,15 +338,15 @@ namespace ISOLogPullLibrary
                                 if (retry <50)
                                 {
                                     Thread.Sleep(2000);
-                                    Console.WriteLine("Retrying ...");
+                                    //Console.WriteLine("Error: Retrying ...");
                                     retry++;
                                 }
                                 // else print error statement, current threads will finish and application
                                 // will end early, there is no way to proceed because we cannot get a NextPageUri
                                 else
                                 {
-                                    Console.Error.WriteLine("Page Request came back null,");
-                                    Console.Error.WriteLine("Not all pages were acquired");
+                                    Console.Error.WriteLine("Error: Page Request came back null,");
+                                    Console.Error.WriteLine("Error: Not all pages were acquired");
                                     retry = 0;
                                     request = null;
                                 }
@@ -390,20 +394,20 @@ namespace ISOLogPullLibrary
                     // reach this branch if subscriptions found but not the subtype specified
                     else
                     {
-                        using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
-                        {
-                            writer.WriteLine("Subscription {0} was not found", SubscriptionType);
+                        //using (StreamWriter writer = new StreamWriter("SubscriptionError.log"))
+                        //{
+                            Console.WriteLine("Error: Subscription {0} was not found", SubscriptionType);
                             int tmp = StartSubscription();
                             if (tmp == 0)
                             {
-                                writer.WriteLine("Failed to start subscription for {0}", SubscriptionType);
-                                writer.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
+                                Console.WriteLine("Error: Failed to start subscription for {0}", SubscriptionType);
+                                Console.WriteLine("Specify <start subtype={0}> to manually start subscription", SubscriptionType);
                             }else
                             {
-                                writer.WriteLine("Started Subscription");
+                                Console.WriteLine("Started Subscription");
                             }
                             return;
-                        }
+                        //}
                             
                     }
                 }
@@ -572,7 +576,7 @@ namespace ISOLogPullLibrary
             }
             // If all retries fail print error
             // Version 2 - add way to determine if this was a NextPageUri request or a record url request
-            Console.Error.WriteLine("HttpGet Error: Missing record");
+            //Console.Error.WriteLine("HttpGet Error: Missing record");
             return null;
 
         }
@@ -679,7 +683,7 @@ namespace ISOLogPullLibrary
                             }
                             else
                             {
-                                Console.WriteLine("Null response in thread");
+                                Console.WriteLine("Error: Null response in thread");
                             }
 
                         }        
@@ -754,17 +758,17 @@ namespace ISOLogPullLibrary
                 // Application will not overwrite any existing files or create any directories
                 if (output == "")
                 {
-                    Console.WriteLine("No output file specified: Using Default File Path");
+                    Console.WriteLine("Error: No output file specified: Using Default File Path");
                     Console.WriteLine();
                 }
                 else if (File.Exists(output))
                 {
-                    Console.WriteLine("File already exists: Using Default File Path");
+                    Console.WriteLine("Error: File already exists: Using Default File Path");
                     Console.WriteLine();
                 }
                 else if (Directory.Exists(output))
                 {
-                    Console.WriteLine("Output path is a directory, please specify a file name at end");
+                    Console.WriteLine("Error: Output path is a directory, please specify a file name at end");
                     Console.WriteLine();
                 }
                 else
@@ -772,7 +776,7 @@ namespace ISOLogPullLibrary
                     string dir = output.Substring(0, output.LastIndexOf('\\'));
                     if (!Directory.Exists(dir))
                     {
-                        Console.WriteLine("Directory does not exist: Using Default File Path");
+                        Console.WriteLine("Error: Directory does not exist: Using Default File Path");
                         Console.WriteLine();
                     }
                     else
@@ -835,7 +839,7 @@ namespace ISOLogPullLibrary
                         }
                     }catch
                     {
-                        Console.WriteLine(i.ToString() + " Thread Output not Found");
+                        Console.WriteLine("Error: "+ i.ToString() + " Thread Output not Found");
                     }
                     
                 }

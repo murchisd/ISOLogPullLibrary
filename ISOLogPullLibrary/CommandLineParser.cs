@@ -75,7 +75,7 @@ namespace ISOLogPullLibrary
                             // Print error and return null
                             else
                             {
-                                Console.WriteLine("Not Proper Format");
+                                Console.WriteLine("Error: Not Proper Format");
                                 return null;
                             }
 
@@ -84,7 +84,7 @@ namespace ISOLogPullLibrary
                         // Print error and return null
                         catch
                         {
-                            Console.WriteLine("Not Proper Format");
+                            Console.WriteLine("Error: Not Proper Format");
                             return null;
                         }
                     }
