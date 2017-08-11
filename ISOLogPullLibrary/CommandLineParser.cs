@@ -1,4 +1,21 @@
-﻿using System;
+﻿/******************************
+ * ISOLogPullLibrary
+ * 
+ * Author:      Donald Murchison
+ *              Information Security Office 
+ *              Sacramento State University
+ * Date:        08/10/2017
+ * 
+ * Description: Library written to help applications interact with the Office 365 Management API to manage logs.
+ *              The library will allow users to authenticate to the API, manage subscriptions, and retrieve available content.
+ *              ExchangeOnlineLogPull Application is already written to use this library.
+ *
+ * Notes: CommandLineParser.cs is not being used by current version
+ *         
+ * *****************************/
+
+ 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,8 +51,8 @@ namespace ISOLogPullLibrary
                 // we test that it does not conatin output to allow help to be in the output file path 
                 if (arg.Contains("help") && !arg.Contains("output"))
                 {
-                    //If find help return right away
-                    // using help=set just so that we can keep a dictionary format and allow user to just pass "help" at command line
+                    //If find help retet urn right away
+                    // using help=sjust so that we can keep a dictionary format and allow user to just pass "help" at command line
                     arguments["help"] = "set";
                     return arguments;
                 }

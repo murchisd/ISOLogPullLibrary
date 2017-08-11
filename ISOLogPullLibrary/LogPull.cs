@@ -1,4 +1,20 @@
-﻿using System;
+﻿/******************************
+ * ISOLogPullLibrary
+ * 
+ * Author:      Donald Murchison
+ *              Information Security Office 
+ *              Sacramento State University
+ * Date:        08/10/2017
+ * 
+ * Description: Library written to help applications interact with the Office 365 Management API to manage logs.
+ *              The library will allow users to authenticate to the API, manage subscriptions, and retrieve available content.
+ *              ExchangeOnlineLogPull Application is already written to use this library.
+ *        
+ * *****************************/
+
+
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
